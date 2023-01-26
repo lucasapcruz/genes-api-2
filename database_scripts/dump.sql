@@ -14,4 +14,12 @@ CREATE TABLE aliases (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
+CREATE TABLE diseases (
+	id SERIAL PRIMARY KEY,
+	gene_id INTEGER NOT NULL,
+	disease VARCHAR(150) NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
 ALTER TABLE aliases ADD CONSTRAINT aliases_fk0 FOREIGN KEY (gene_id) REFERENCES genes(id);
+ALTER TABLE diseases ADD CONSTRAINT diseases_fk0 FOREIGN KEY (gene_id) REFERENCES genes(id);
