@@ -1,4 +1,4 @@
-import { connection } from "../database/database.js";
+import {prisma, connection} from "../database/database.js";
 import { query, Request, Response } from 'express';
 import { Query, QueryResult } from "pg";
 import { Alias } from "../protocols/alias.js";
