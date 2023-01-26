@@ -1,4 +1,4 @@
-import {prisma, connection} from "../database/database.js";
+import { prisma, connection } from "../database/database.js";
 import { query, Request, Response } from 'express';
 import { Query, QueryResult } from "pg";
 import { Alias } from "../protocols/alias.js";
@@ -30,24 +30,28 @@ export async function getGenes(req: Request, res: Response) {
     }
 }
 
-export async function getGenesById(req: Request, res: Response) {
+export async function getGenesById(req: Request, res: Response): Promise<void> {
     const { id } = req.params
 
     try {
-        const genes: QueryResult<Gene> = await connection.query(`
-            SELECT * 
-            FROM genes g
-            WHERE g.id = $1`, [id])
+        const genes = await prisma.genes.findFirst({
+            where: {
+                id: Number(id)
+            },
+            include: {
+                aliases: true
+            }
+        })
 
-        res.status(200).send(genes.rows);
+        res.status(200).send(genes);
     } catch (error) {
         res.sendStatus(500);
     }
 }
 
 export async function createAlias(req: Request, res: Response): Promise<void> {
-    const {id} = req.params
-    const {alias, aliasOrigin} = req.body
+    const { id } = req.params
+    const { alias, aliasOrigin } = req.body
 
     try {
 
@@ -57,7 +61,7 @@ export async function createAlias(req: Request, res: Response): Promise<void> {
 
         const aliasAlreadyexists: boolean = queryExistentAliases.rows.length > 0
 
-        if(aliasAlreadyexists){
+        if (aliasAlreadyexists) {
             res.sendStatus(409)
             return
         }
@@ -73,7 +77,7 @@ export async function createAlias(req: Request, res: Response): Promise<void> {
 }
 
 export async function createGene(req: Request, res: Response): Promise<void> {
-    const {hgncSymbol, hgncName, description} = req.body
+    const { hgncSymbol, hgncName, description } = req.body
 
     try {
 
@@ -83,7 +87,7 @@ export async function createGene(req: Request, res: Response): Promise<void> {
 
         const geneAlreadyexists: boolean = queryExistentGenes.rows.length > 0
 
-        if(geneAlreadyexists){
+        if (geneAlreadyexists) {
             res.sendStatus(409)
             return
         }
@@ -99,7 +103,7 @@ export async function createGene(req: Request, res: Response): Promise<void> {
 }
 
 export async function deleteGene(req: Request, res: Response): Promise<void> {
-    const {id} = req.params
+    const { id } = req.params
 
     try {
 
@@ -109,7 +113,7 @@ export async function deleteGene(req: Request, res: Response): Promise<void> {
 
         const geneExists: boolean = queryExistentGenes.rows.length > 0
 
-        if(!geneExists){
+        if (!geneExists) {
             res.sendStatus(404)
             return
         }
@@ -118,9 +122,9 @@ export async function deleteGene(req: Request, res: Response): Promise<void> {
             SELECT * FROM aliases WHERE gene_id = $1
         `, [id])
 
-        const geneHasAliases: boolean = queryAliasesOfGene.rows.length > 0 
+        const geneHasAliases: boolean = queryAliasesOfGene.rows.length > 0
 
-        if(geneHasAliases){
+        if (geneHasAliases) {
             await connection.query(`
             DELETE FROM aliases WHERE gene_id = $1;`, [id])
         }
@@ -135,8 +139,8 @@ export async function deleteGene(req: Request, res: Response): Promise<void> {
 }
 
 export async function updateGene(req: Request, res: Response): Promise<void> {
-    const {id} = req.params
-    const {hgncSymbol, hgncName, description} = req.body
+    const { id } = req.params
+    const { hgncSymbol, hgncName, description } = req.body
 
     try {
 
@@ -146,7 +150,7 @@ export async function updateGene(req: Request, res: Response): Promise<void> {
 
         const geneExists: boolean = queryExistentGenes.rows.length > 0
 
-        if(!geneExists){
+        if (!geneExists) {
             res.sendStatus(404)
             return
         }
