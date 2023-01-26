@@ -10,21 +10,20 @@ export async function getGenes(req: Request, res: Response) {
     const offset: number = page ? ((Number(page) - 1) * resultsPerPage) : 0
 
     try {
-        const genes: QueryResult<Gene> = await connection.query(`
-            SELECT
-                genes.id AS id,
-                genes.hgnc_symbol AS hgnc_symbol,
-                json_agg(json_strip_nulls(json_build_object('alias', aliases.alias , 'origin', aliases.alias_origin))) AS aliases,
-                genes.description AS description
-            FROM genes
-            LEFT JOIN aliases
-            ON genes.id = aliases.gene_id
-            GROUP BY genes.id
-            ORDER BY genes.hgnc_symbol ASC
-            LIMIT $1 
-            OFFSET $2`, [resultsPerPage, offset])
+        const genes = await prisma.genes.findMany({
+            orderBy:[
+                {
+                    symbol: 'asc'
+                }
+            ],
+            include: {
+                aliases: true
+            },
+            skip: offset,
+            take: resultsPerPage
+        })
 
-        res.status(200).send(genes.rows);
+        res.status(200).send(genes);
     } catch (error) {
         res.sendStatus(500);
     }
