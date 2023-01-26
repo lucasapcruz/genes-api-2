@@ -140,22 +140,35 @@ export async function updateGene(req: Request, res: Response): Promise<void> {
     const { hgncSymbol, hgncName, description } = req.body
 
     try {
+        const genes = await prisma.genes.findFirst({
+            where: {
+                id: Number(id)
+            }
+        })
 
-        const queryExistentGenes: QueryResult<GeneEntity> = await connection.query(`
-            SELECT * FROM genes WHERE id = $1
-        `, [id])
-
-        const geneExists: boolean = queryExistentGenes.rows.length > 0
-
-        if (!geneExists) {
-            res.sendStatus(404)
+        if(!genes){
+            res.status(404).send('Gene not found')
             return
         }
 
-        await connection.query(`
-        UPDATE genes SET hgnc_symbol = $1, hgnc_name = $2, description = $3 WHERE id = $4;`, [hgncSymbol, hgncName, description, id])
+        const updatedGene = await prisma.genes.update({
+            where: {
+                id: Number(id)
+            },
+            data: {
+                symbol: hgncSymbol,
+                name: hgncName, 
+                description: description
+            },
+            select:{
+                id: true,
+                symbol: true,
+                name: true,
+                description: true
+            }
+        })
 
-        res.sendStatus(200)
+        res.status(200).send(updatedGene)
     } catch (error) {
         res.sendStatus(500);
     }
