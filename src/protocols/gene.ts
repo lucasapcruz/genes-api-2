@@ -8,4 +8,4 @@ export type GeneEntity = {
     description: string
 }
 
-export type Gene = Omit<GeneEntity,'id'>
+export type Gene = Omit<GeneEntity,'id' | 'aliases'>
