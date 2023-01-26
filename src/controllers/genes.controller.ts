@@ -2,7 +2,7 @@ import { prisma, connection } from "../database/database.js";
 import { query, Request, Response } from 'express';
 import { Query, QueryResult } from "pg";
 import { Alias } from "../protocols/alias.js";
-import { Gene } from "../protocols/gene.js";
+import { GeneEntity, Gene } from "../protocols/gene.js";
 
 export async function getGenes(req: Request, res: Response) {
     const { page, results_per_page, hgnc_symbol } = req.query
@@ -80,7 +80,7 @@ export async function createGene(req: Request, res: Response): Promise<void> {
 
     try {
 
-        const queryExistentGenes: QueryResult<Gene> = await connection.query(`
+        const queryExistentGenes: QueryResult<GeneEntity> = await connection.query(`
             SELECT * FROM genes where hgnc_symbol = $1
         `, [hgncSymbol])
 
@@ -106,7 +106,7 @@ export async function deleteGene(req: Request, res: Response): Promise<void> {
 
     try {
 
-        const queryExistentGenes: QueryResult<Gene> = await connection.query(`
+        const queryExistentGenes: QueryResult<GeneEntity> = await connection.query(`
             SELECT * FROM genes WHERE id = $1
         `, [id])
 
@@ -143,7 +143,7 @@ export async function updateGene(req: Request, res: Response): Promise<void> {
 
     try {
 
-        const queryExistentGenes: QueryResult<Gene> = await connection.query(`
+        const queryExistentGenes: QueryResult<GeneEntity> = await connection.query(`
             SELECT * FROM genes WHERE id = $1
         `, [id])
 
