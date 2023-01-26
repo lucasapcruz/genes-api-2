@@ -111,33 +111,36 @@ export async function deleteGene(req: Request, res: Response): Promise<void> {
     const { id } = req.params
 
     try {
+        const genes = await prisma.genes.findFirst({
+            where: {
+                id: Number(id)
+            }
+        })
 
-        const queryExistentGenes: QueryResult<GeneEntity> = await connection.query(`
-            SELECT * FROM genes WHERE id = $1
-        `, [id])
-
-        const geneExists: boolean = queryExistentGenes.rows.length > 0
-
-        if (!geneExists) {
-            res.sendStatus(404)
+        if(!genes){
+            res.status(404).send('Gene not found')
             return
         }
 
-        const queryAliasesOfGene: QueryResult<Alias> = await connection.query(`
-            SELECT * FROM aliases WHERE gene_id = $1
-        `, [id])
+        const deletedAliasesRelatedToGene = await prisma.aliases.deleteMany({
+            where: {
+                geneId: Number(id)
+            }
+        })
 
-        const geneHasAliases: boolean = queryAliasesOfGene.rows.length > 0
+        const deletedDiseasesRelatedToGene = await prisma.diseases.deleteMany({
+            where: {
+                geneId: Number(id)
+            }
+        })
 
-        if (geneHasAliases) {
-            await connection.query(`
-            DELETE FROM aliases WHERE gene_id = $1;`, [id])
-        }
+        const deletedGene = await prisma.genes.delete({
+            where: {
+                id: Number(id)
+            },
+        })
 
-        await connection.query(`
-        DELETE FROM genes WHERE id = $1;`, [id])
-
-        res.sendStatus(200)
+        res.status(200).send(deletedGene)
     } catch (error) {
         res.sendStatus(500);
     }
