@@ -79,26 +79,29 @@ export async function createAlias(req: Request, res: Response): Promise<void> {
 }
 
 export async function createGene(req: Request, res: Response): Promise<void> {
-    const { hgncSymbol, hgncName, description } = req.body
+    const { hgncSymbol, hgncName, description } = req.body as Gene
 
     try {
+        const genesWithSameName = await prisma.genes.findFirst({
+            where: {
+                symbol: hgncSymbol
+            }
+        })
 
-        const queryExistentGenes: QueryResult<GeneEntity> = await connection.query(`
-            SELECT * FROM genes where hgnc_symbol = $1
-        `, [hgncSymbol])
-
-        const geneAlreadyexists: boolean = queryExistentGenes.rows.length > 0
-
-        if (geneAlreadyexists) {
+        if(genesWithSameName){
             res.sendStatus(409)
             return
         }
 
-        await connection.query(`
-        INSERT INTO genes  (hgnc_symbol, hgnc_name, description)
-        VALUES ($1, $2, $3);`, [hgncSymbol, hgncName, description])
+        const genesInserted = await prisma.genes.create({
+            data: {
+                symbol: hgncSymbol,
+                name: hgncName,
+                description: description
+            }
+        })
 
-        res.sendStatus(201)
+        res.status(201).send(genesInserted)
     } catch (error) {
         res.sendStatus(500);
     }
