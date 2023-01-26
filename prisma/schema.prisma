@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model aliases {
+  id           Int       @id @default(autoincrement())
+  geneId     Int         @map("gene_id")
+  alias        String    @db.VarChar(50)
+  aliasOrigin String?    @db.VarChar(50) @map("alias_origin")
+  createdAt    DateTime? @default(now()) @db.Timestamp(6) @map("created_at")
+  genes        genes     @relation(fields: [geneId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "aliases_fk0")
+}
+
+model body_parts {
+  id                              Int                               @id @default(autoincrement())
+  part                            String                            @db.VarChar(150)
+  type                            String?                           @db.VarChar(150)
+  created_at                      DateTime?                         @default(now()) @db.Timestamp(6)
+  body_parts_affected_by_diseases body_parts_affected_by_diseases[] 
+}
+
+model body_parts_affected_by_diseases {
+  id           Int        @id @default(autoincrement())
+  bodyPartId   Int        @map("body_part_id")
+  diseaseId    Int         @map("disease_id")
+  createdAt    DateTime?   @default(now()) @db.Timestamp(6) @map("created_at")
+  body_parts    body_parts @relation(fields: [bodyPartId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "bp_fk0")
+  diseases     diseases   @relation(fields: [diseaseId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "bp_fk1")
+}
+
+model diseases {
+  id                              Int                               @id @default(autoincrement())
+  geneId                         Int                                @map("gene_id")
+  disease                         String                            @db.VarChar(150)
+  createdAt                      DateTime?                          @default(now()) @db.Timestamp(6) @map("created_at")
+  body_parts_affected_by_diseases body_parts_affected_by_diseases[] 
+  genes                           genes                             @relation(fields: [geneId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "diseases_fk0")
+}
+
+model genes {
+  id          Int        @id @default(autoincrement())
+  symbol String     @db.VarChar(50) @map("hgnc_symbol")
+  name   String?    @db.VarChar(100) @map("hgnc_name")
+  description String
+  createdAt  DateTime?  @default(now()) @db.Timestamp(6) @map("created_at")
+  aliases     aliases[]
+  diseases    diseases[]
+}
