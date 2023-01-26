@@ -53,23 +53,26 @@ export async function createAlias(req: Request, res: Response): Promise<void> {
     const { alias, aliasOrigin } = req.body
 
     try {
+        const aliasWithSameName = await prisma.aliases.findFirst({
+            where: {
+                alias: alias
+            }
+        })
 
-        const queryExistentAliases: QueryResult<Alias> = await connection.query(`
-            SELECT * FROM aliases where alias = $1
-        `, [alias])
-
-        const aliasAlreadyexists: boolean = queryExistentAliases.rows.length > 0
-
-        if (aliasAlreadyexists) {
+        if(aliasWithSameName){
             res.sendStatus(409)
             return
         }
 
-        await connection.query(`
-        INSERT INTO aliases  (gene_id, alias, alias_origin)
-        VALUES ($1, $2, $3);`, [id, alias, aliasOrigin])
+        const aliasInserted = await prisma.aliases.create({
+            data: {
+                geneId: Number(id),
+                alias: alias,
+                aliasOrigin: aliasOrigin
+            }
+        })
 
-        res.sendStatus(201)
+        res.status(201).send(aliasInserted)
     } catch (error) {
         res.sendStatus(500);
     }
