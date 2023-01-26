@@ -122,18 +122,6 @@ export async function deleteGene(req: Request, res: Response): Promise<void> {
             return
         }
 
-        // const deletedAliasesRelatedToGene = await prisma.aliases.deleteMany({
-        //     where: {
-        //         geneId: Number(id)
-        //     }
-        // })
-
-        // const deletedDiseasesRelatedToGene = await prisma.diseases.deleteMany({
-        //     where: {
-        //         geneId: Number(id)
-        //     }
-        // })
-
         const deletedGene = await prisma.genes.delete({
             where: {
                 id: Number(id)
