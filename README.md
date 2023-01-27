@@ -3,7 +3,7 @@
 A POC for a gene information service built using TypeScript
 
 ## Routes
-  `GET /genes`: Returns a paginated list of genes, with 10 genes per page (default). Accepts parameters as qeeries (page, results_per_page)
+  `GET /genes`: Returns a paginated list of genes, with 30 genes per page (default) or a search result for a gene when search query is present. Accepts parameters as queries (page, results_per_page)
   
   `GET /genes/:id`: Return a specific gene by ID
   
