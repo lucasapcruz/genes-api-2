@@ -5,23 +5,53 @@ import { Alias } from "../protocols/alias.js";
 import { GeneEntity, Gene } from "../protocols/gene.js";
 
 export async function getGenes(req: Request, res: Response) {
-    const { page, results_per_page, hgnc_symbol } = req.query
+    const { page, results_per_page, search } = req.query
     const resultsPerPage: number = results_per_page ? Number(results_per_page) : 30
     const offset: number = page ? ((Number(page) - 1) * resultsPerPage) : 0
 
     try {
-        const genes = await prisma.genes.findMany({
-            orderBy:[
-                {
-                    symbol: 'asc'
-                }
-            ],
-            include: {
-                aliases: true
-            },
-            skip: offset,
-            take: resultsPerPage
-        })
+
+        let genes
+
+        if (search) {
+            genes = await prisma.genes.findMany({
+                where: {
+                    OR: [{
+                        symbol: String(search),
+                    },
+                    {
+                        aliases: {
+                            some: {
+                                alias: String(search)
+                            }
+                        }
+                    }],
+                },
+                orderBy: [
+                    {
+                        symbol: 'asc'
+                    }
+                ],
+                include: {
+                    aliases: true
+                },
+                skip: offset,
+                take: resultsPerPage
+            })
+        } else {
+            genes = await prisma.genes.findMany({
+                orderBy: [
+                    {
+                        symbol: 'asc'
+                    }
+                ],
+                include: {
+                    aliases: true
+                },
+                skip: offset,
+                take: resultsPerPage
+            })
+        }
 
         res.status(200).send(genes);
     } catch (error) {
@@ -59,7 +89,7 @@ export async function createAlias(req: Request, res: Response): Promise<void> {
             }
         })
 
-        if(aliasWithSameName){
+        if (aliasWithSameName) {
             res.sendStatus(409)
             return
         }
@@ -88,7 +118,7 @@ export async function createGene(req: Request, res: Response): Promise<void> {
             }
         })
 
-        if(genesWithSameName){
+        if (genesWithSameName) {
             res.sendStatus(409)
             return
         }
@@ -117,7 +147,7 @@ export async function deleteGene(req: Request, res: Response): Promise<void> {
             }
         })
 
-        if(!genes){
+        if (!genes) {
             res.status(404).send('Gene not found')
             return
         }
@@ -146,7 +176,7 @@ export async function updateGene(req: Request, res: Response): Promise<void> {
             }
         })
 
-        if(!genes){
+        if (!genes) {
             res.status(404).send('Gene not found')
             return
         }
@@ -157,10 +187,10 @@ export async function updateGene(req: Request, res: Response): Promise<void> {
             },
             data: {
                 symbol: hgncSymbol,
-                name: hgncName, 
+                name: hgncName,
                 description: description
             },
-            select:{
+            select: {
                 id: true,
                 symbol: true,
                 name: true,
