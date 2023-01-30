@@ -6,3 +6,5 @@ export type AliasEntity = {
 }
 
 export type Alias = Omit<AliasEntity, 'id'>
+
+export type CreateAlias = Omit<AliasEntity, 'id' | 'geneId'>

@@ -1,10 +1,10 @@
-import { prisma, connection } from "../database/database.js";
+import prisma from "../database/database.js";
 import { query, Request, Response } from 'express';
 import { Query, QueryResult } from "pg";
 import { Alias } from "../protocols/alias.js";
 import { GeneEntity, Gene } from "../protocols/gene.js";
 
-export async function getGenes(req: Request, res: Response) {
+export async function getGenes(req: Request, res: Response): Promise<void> {
     const { page, results_per_page, search } = req.query
     const resultsPerPage: number = results_per_page ? Number(results_per_page) : 30
     const offset: number = page ? ((Number(page) - 1) * resultsPerPage) : 0

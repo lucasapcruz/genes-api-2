@@ -1,9 +1,9 @@
-import baseJoi from "joi";
+import Joi from "joi";
 import dateExtension from "@joi/date";
-const joi = baseJoi.extend(dateExtension);
+import { Gene } from "../protocols/gene";
 
-export const genesSchema = joi.object({
-    hgncSymbol: joi.string().required().min(2),
-    hgncName: joi.string().required().min(2),
-    description: joi.string().required().min(2)
+export const genesSchema = Joi.object<Gene>({
+    hgncSymbol: Joi.string().required().min(2),
+    hgncName: Joi.string().required().min(2),
+    description: Joi.string().required().min(2)
 });
