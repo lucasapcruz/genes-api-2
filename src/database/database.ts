@@ -17,4 +17,4 @@ const connection = new Pool({
 const { PrismaClient } = pkg;
 const prisma = new PrismaClient();
 
-export { connection, prisma };
+export default prisma;
